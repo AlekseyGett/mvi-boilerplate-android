@@ -2,8 +2,31 @@ package io.github.alekseygett.mviboilerplate.utils
 
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import android.widget.EditText
 import java.util.*
+
+private const val DEFAULT_THROTTLE_DELAY = 300L
+
+fun View.setThrottledClickListener(delay: Long = DEFAULT_THROTTLE_DELAY, onClick: (View) -> Unit) {
+    setOnClickListener {
+        throttle(delay) {
+            onClick(it)
+        }
+    }
+}
+
+private var lastClickTimestamp = 0L
+fun throttle(delay: Long = DEFAULT_THROTTLE_DELAY, action: () -> Unit): Boolean {
+    val currentTimestamp = System.currentTimeMillis()
+    val delta = currentTimestamp - lastClickTimestamp
+    if (delta !in 0L..delay) {
+        lastClickTimestamp = currentTimestamp
+        action()
+        return true
+    }
+    return false
+}
 
 fun EditText.setDebouncingTextListener(
     debouncePeriod: Long = 300,
